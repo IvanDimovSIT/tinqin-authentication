@@ -1,4 +1,4 @@
-package com.tinqinacaademy.authentication.rest.controllers;
+package com.tinqinacademy.authentication.rest.controllers;
 
 
 import com.tinqinacademy.authentication.api.base.OperationOutput;

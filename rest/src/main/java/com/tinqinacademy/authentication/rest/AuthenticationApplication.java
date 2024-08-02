@@ -1,4 +1,4 @@
-package com.tinqinacaademy.authentication.rest;
+package com.tinqinacademy.authentication.rest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
