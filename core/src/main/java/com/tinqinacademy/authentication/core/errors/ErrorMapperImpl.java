@@ -3,8 +3,8 @@ package com.tinqinacademy.authentication.core.errors;
 
 
 import com.tinqinacademy.authentication.api.errors.Errors;
-import com.tinqinacademy.authentication.core.exception.BaseException;
-import com.tinqinacademy.authentication.core.exception.exceptions.ViolationException;
+import com.tinqinacademy.authentication.api.exception.BaseException;
+import com.tinqinacademy.authentication.api.exception.exceptions.ViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
-package com.tinqinacademy.authentication.core.exception.exceptions;
+package com.tinqinacademy.authentication.api.exception.exceptions;
 
 
-import com.tinqinacademy.authentication.core.exception.BaseException;
+import com.tinqinacademy.authentication.api.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class NotFoundException extends BaseException {
