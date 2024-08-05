@@ -1,4 +1,4 @@
-package com.tinqinacademy.authentication.core.exception.exceptions;
+package com.tinqinacademy.authentication.api.exception.exceptions;
 
 
 

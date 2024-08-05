@@ -1,4 +1,4 @@
-package com.tinqinacademy.authentication.core.exception;
+package com.tinqinacademy.authentication.api.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
