@@ -19,6 +19,7 @@ import java.util.UUID;
 @Builder
 @ToString
 @Getter
+@Setter
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
