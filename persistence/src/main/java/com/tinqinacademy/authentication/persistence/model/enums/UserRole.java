@@ -2,11 +2,12 @@ package com.tinqinacademy.authentication.persistence.model.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
+import org.springframework.security.core.GrantedAuthority;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public enum UserRole {
+public enum UserRole implements GrantedAuthority {
     USER("user"),
     ADMIN("admin"),
     UNKNOWN("");
@@ -28,5 +29,10 @@ public enum UserRole {
     @JsonValue
     public String toString() {
         return code;
+    }
+
+    @Override
+    public String getAuthority() {
+        return toString();
     }
 }
