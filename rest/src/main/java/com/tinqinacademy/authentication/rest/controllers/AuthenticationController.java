@@ -5,6 +5,9 @@ import com.tinqinacademy.authentication.api.errors.Errors;
 import com.tinqinacademy.authentication.api.operations.authenticate.AuthenticateInput;
 import com.tinqinacademy.authentication.api.operations.authenticate.AuthenticateOperation;
 import com.tinqinacademy.authentication.api.operations.authenticate.AuthenticateOutput;
+import com.tinqinacademy.authentication.api.operations.changepassword.ChangePasswordInput;
+import com.tinqinacademy.authentication.api.operations.changepassword.ChangePasswordOperation;
+import com.tinqinacademy.authentication.api.operations.changepassword.ChangePasswordOutput;
 import com.tinqinacademy.authentication.api.operations.demote.DemoteInput;
 import com.tinqinacademy.authentication.api.operations.demote.DemoteOperation;
 import com.tinqinacademy.authentication.api.operations.demote.DemoteOutput;
@@ -25,8 +28,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.web.header.Header;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,6 +38,7 @@ public class AuthenticationController extends BaseController {
     private final LoginOperation loginOperation;
     private final PromoteOperation promoteOperation;
     private final DemoteOperation demoteOperation;
+    private final ChangePasswordOperation changePasswordOperation;
 
     @Operation(summary = "Authenticates JWT", description = "Returns user details for JWT token")
     @ApiResponses(value = {
@@ -90,8 +92,8 @@ public class AuthenticationController extends BaseController {
             @ApiResponse(responseCode = "404", description = "NotFound"),
     })
     @PostMapping(RestApiRoutes.AUTH_PROMOTE)
-    public ResponseEntity<?> promote(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestBody PromoteInput input) {
-        input.setJwtHeader(jwtToken);
+    public ResponseEntity<?> promote(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtHeader, @RequestBody PromoteInput input) {
+        input.setJwtHeader(jwtHeader);
 
         Either<Errors, PromoteOutput> output = promoteOperation.process(input);
 
@@ -106,10 +108,27 @@ public class AuthenticationController extends BaseController {
             @ApiResponse(responseCode = "404", description = "NotFound"),
     })
     @PostMapping(RestApiRoutes.AUTH_DEMOTE)
-    public ResponseEntity<?> demote(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestBody DemoteInput input) {
-        input.setJwtHeader(jwtToken);
+    public ResponseEntity<?> demote(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtHeader, @RequestBody DemoteInput input) {
+        input.setJwtHeader(jwtHeader);
 
         Either<Errors, DemoteOutput> output = demoteOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Change password", description = "Changes the users password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "NotFound"),
+    })
+    @PostMapping(RestApiRoutes.AUTH_CHANGE_PASSWORD)
+    public ResponseEntity<?> changePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtHeader,
+                                            @RequestBody ChangePasswordInput input) {
+        input.setJwtHeader(jwtHeader);
+
+        Either<Errors, ChangePasswordOutput> output = changePasswordOperation.process(input);
 
         return mapToResponseEntity(output, HttpStatus.OK);
     }
