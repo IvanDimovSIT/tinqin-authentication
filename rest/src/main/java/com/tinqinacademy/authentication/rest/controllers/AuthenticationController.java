@@ -5,6 +5,9 @@ import com.tinqinacademy.authentication.api.errors.Errors;
 import com.tinqinacademy.authentication.api.operations.authenticate.AuthenticateInput;
 import com.tinqinacademy.authentication.api.operations.authenticate.AuthenticateOperation;
 import com.tinqinacademy.authentication.api.operations.authenticate.AuthenticateOutput;
+import com.tinqinacademy.authentication.api.operations.demote.DemoteInput;
+import com.tinqinacademy.authentication.api.operations.demote.DemoteOperation;
+import com.tinqinacademy.authentication.api.operations.demote.DemoteOutput;
 import com.tinqinacademy.authentication.api.operations.login.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.LoginOutput;
@@ -33,6 +36,7 @@ public class AuthenticationController extends BaseController {
     private final RegisterOperation registerOperation;
     private final LoginOperation loginOperation;
     private final PromoteOperation promoteOperation;
+    private final DemoteOperation demoteOperation;
 
     @Operation(summary = "Authenticates JWT", description = "Returns user details for JWT token")
     @ApiResponses(value = {
@@ -90,6 +94,22 @@ public class AuthenticationController extends BaseController {
         input.setJwtHeader(jwtToken);
 
         Either<Errors, PromoteOutput> output = promoteOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Demotes admin", description = "Demotes an admin to user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "NotFound"),
+    })
+    @PostMapping(RestApiRoutes.AUTH_DEMOTE)
+    public ResponseEntity<?> demote(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestBody DemoteInput input) {
+        input.setJwtHeader(jwtToken);
+
+        Either<Errors, DemoteOutput> output = demoteOperation.process(input);
 
         return mapToResponseEntity(output, HttpStatus.OK);
     }
