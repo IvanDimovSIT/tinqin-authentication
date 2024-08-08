@@ -46,9 +46,8 @@ public class PromoteOperationProcessor extends BaseOperationProcessor implements
     }
 
     private AuthenticateOutput getAuthentication(String header) {
-        String token = jwtUtil.getTokenFromHeader(header);
         AuthenticateInput authenticateInput = AuthenticateInput.builder()
-                .jwtToken(token)
+                .jwtHeader(header)
                 .build();
 
         Either<Errors, AuthenticateOutput> output = authenticateOperation.process(authenticateInput);

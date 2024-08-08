@@ -47,7 +47,10 @@ public class AuthenticationController extends BaseController {
             @ApiResponse(responseCode = "404", description = "NotFound"),
     })
     @PostMapping(RestApiRoutes.AUTH_AUTHENTICATE)
-    public ResponseEntity<?> authenticate(@RequestBody AuthenticateInput input) {
+    public ResponseEntity<?> authenticate(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtHeader) {
+        AuthenticateInput input = AuthenticateInput.builder()
+                .jwtHeader(jwtHeader)
+                .build();
         Either<Errors, AuthenticateOutput> output = authenticateOperation.process(input);
 
         return mapToResponseEntity(output, HttpStatus.OK);
