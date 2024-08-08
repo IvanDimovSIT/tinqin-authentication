@@ -6,7 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Arrays;
 
-public enum UserRole implements GrantedAuthority {
+public enum UserRole {
     USER("user"),
     ADMIN("admin"),
     UNKNOWN("");
@@ -30,8 +30,4 @@ public enum UserRole implements GrantedAuthority {
         return code;
     }
 
-    @Override
-    public String getAuthority() {
-        return toString();
-    }
 }

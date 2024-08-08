@@ -22,7 +22,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
@@ -61,8 +61,4 @@ public class User implements UserDetails {
     @Column(name = "last_modified")
     private LocalDateTime lastModified;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(userRole);
-    }
 }
