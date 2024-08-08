@@ -8,6 +8,9 @@ import com.tinqinacademy.authentication.api.operations.authenticate.Authenticate
 import com.tinqinacademy.authentication.api.operations.login.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.LoginOutput;
+import com.tinqinacademy.authentication.api.operations.promote.PromoteInput;
+import com.tinqinacademy.authentication.api.operations.promote.PromoteOperation;
+import com.tinqinacademy.authentication.api.operations.promote.PromoteOutput;
 import com.tinqinacademy.authentication.api.operations.register.RegisterInput;
 import com.tinqinacademy.authentication.api.operations.register.RegisterOperation;
 import com.tinqinacademy.authentication.api.operations.register.RegisterOutput;
@@ -29,6 +32,7 @@ public class AuthenticationController extends BaseController {
     private final AuthenticateOperation authenticateOperation;
     private final RegisterOperation registerOperation;
     private final LoginOperation loginOperation;
+    private final PromoteOperation promoteOperation;
 
     @Operation(summary = "Authenticates JWT", description = "Returns user details for JWT token")
     @ApiResponses(value = {
@@ -72,5 +76,21 @@ public class AuthenticationController extends BaseController {
 
             return new ResponseEntity<>(output.get(), headers, HttpStatus.OK);
         }
+    }
+
+    @Operation(summary = "Promote user", description = "Promotes a user to admin")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "NotFound"),
+    })
+    @PostMapping(RestApiRoutes.AUTH_PROMOTE)
+    public ResponseEntity<?> promote(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestBody PromoteInput input) {
+        input.setJwtHeader(jwtToken);
+
+        Either<Errors, PromoteOutput> output = promoteOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
     }
 }

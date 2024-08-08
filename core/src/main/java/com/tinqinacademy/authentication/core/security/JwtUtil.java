@@ -1,5 +1,6 @@
 package com.tinqinacademy.authentication.core.security;
 
+import com.tinqinacademy.authentication.api.exception.exceptions.InvalidAuthenticationHeaderException;
 import com.tinqinacademy.authentication.persistence.model.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -56,5 +57,12 @@ public class JwtUtil {
         String role = claims.get(ROLE_KEY, String.class);
 
         return new UserToken(userId, role);
+    }
+
+    public String getTokenFromHeader(String header) {
+        if(header == null || !header.startsWith("Bearer ")){
+            throw new InvalidAuthenticationHeaderException();
+        }
+        return header.substring(7);
     }
 }

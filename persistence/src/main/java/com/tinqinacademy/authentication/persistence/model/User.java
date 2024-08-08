@@ -28,10 +28,10 @@ public class User {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false, length = 64)
+    @Column(name = "username", nullable = false, length = 64, unique = true)
     private String username;
 
-    @Column(name = "email", nullable = false, length = 64)
+    @Column(name = "email", nullable = false, length = 64, unique = true)
     private String email;
 
     @Column(name = "password", nullable = false, length = 256)
