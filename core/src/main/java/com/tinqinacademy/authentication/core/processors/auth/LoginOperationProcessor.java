@@ -1,13 +1,10 @@
 package com.tinqinacademy.authentication.core.processors.auth;
 
-import com.tinqinacademy.authentication.api.base.OperationProcessor;
 import com.tinqinacademy.authentication.api.errors.Errors;
 import com.tinqinacademy.authentication.api.exception.exceptions.InvalidCredentialsException;
-import com.tinqinacademy.authentication.api.exception.exceptions.NotFoundException;
 import com.tinqinacademy.authentication.api.operations.login.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.LoginOutput;
-import com.tinqinacademy.authentication.api.operations.register.RegisterOutput;
 import com.tinqinacademy.authentication.core.errors.ErrorMapper;
 import com.tinqinacademy.authentication.core.processors.BaseOperationProcessor;
 import com.tinqinacademy.authentication.core.security.HashingUtil;

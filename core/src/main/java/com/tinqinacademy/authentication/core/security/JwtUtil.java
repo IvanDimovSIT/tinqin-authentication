@@ -45,6 +45,14 @@ public class JwtUtil {
         }
     }
 
+    public UserToken extractFromHeader(String jwtHeader) {
+        return extract(jwtHeader.substring(7));
+    }
+
+    public boolean validateFromHeader(String jwtHeader) {
+        return validateToken(jwtHeader.substring(7));
+    }
+
     public UserToken extract(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(key())

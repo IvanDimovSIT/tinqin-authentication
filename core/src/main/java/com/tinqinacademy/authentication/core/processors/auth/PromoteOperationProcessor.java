@@ -45,7 +45,7 @@ public class PromoteOperationProcessor extends BaseOperationProcessor implements
         this.authenticateOperation = authenticateOperation;
     }
 
-    private AuthenticateOutput getAuthentication(String header) {
+    private UserToken getAuthentication(String header) {
         AuthenticateInput authenticateInput = AuthenticateInput.builder()
                 .jwtHeader(header)
                 .build();
@@ -55,7 +55,7 @@ public class PromoteOperationProcessor extends BaseOperationProcessor implements
             throw new InvalidTokenException("Invalid token");
         }
 
-        return output.get();
+        return jwtUtil.extractFromHeader(header);
     }
 
     private User getUserToPromote(String userId) {
@@ -74,8 +74,8 @@ public class PromoteOperationProcessor extends BaseOperationProcessor implements
         return Try.of(() -> {
                     log.info("Start process input:{}", input);
                     validate(input);
-                    AuthenticateOutput authenticateOutput = getAuthentication(input.getJwtHeader());
-                    if(!authenticateOutput.getRole().equals(UserRole.ADMIN)) {
+                    UserToken userToken = getAuthentication(input.getJwtHeader());
+                    if(!userToken.getRole().equals(UserRole.ADMIN.toString())) {
                         throw new InvalidAccessException(UserRole.ADMIN);
                     }
 
