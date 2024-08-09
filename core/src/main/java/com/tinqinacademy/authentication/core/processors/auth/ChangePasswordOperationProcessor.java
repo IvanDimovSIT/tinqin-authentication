@@ -11,7 +11,6 @@ import com.tinqinacademy.authentication.api.operations.changepassword.ChangePass
 import com.tinqinacademy.authentication.core.errors.ErrorMapper;
 import com.tinqinacademy.authentication.core.processors.BaseOperationProcessor;
 import com.tinqinacademy.authentication.core.security.HashingUtil;
-import com.tinqinacademy.authentication.core.security.JwtUtil;
 import com.tinqinacademy.authentication.persistence.model.User;
 import com.tinqinacademy.authentication.persistence.repository.UserRepository;
 import io.vavr.control.Either;
@@ -24,16 +23,14 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ChangePasswordOperationProcessor extends BaseOperationProcessor implements ChangePasswordOperation {
-    private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final AuthenticateOperation authenticateOperation;
     private final HashingUtil hashingUtil;
 
     public ChangePasswordOperationProcessor(ConversionService conversionService, ErrorMapper errorMapper,
-                                            Validator validator, JwtUtil jwtUtil, UserRepository userRepository,
+                                            Validator validator, UserRepository userRepository,
                                             AuthenticateOperation authenticateOperation, HashingUtil hashingUtil) {
         super(conversionService, errorMapper, validator);
-        this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.authenticateOperation = authenticateOperation;
         this.hashingUtil = hashingUtil;

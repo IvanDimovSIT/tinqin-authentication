@@ -47,7 +47,7 @@ public class AuthenticateOperationProcessor extends BaseOperationProcessor imple
         }
     }
 
-    private User getUserFromToken(String token) {
+    private void checkTokenMatchesUserEntity(String token) {
         UserToken userToken = jwtUtil.extract(token);
         User user = userRepository.findById(UUID.fromString(userToken.getId()))
                 .orElseThrow(() -> new NotFoundException(String.format("User not found: %s", userToken.getId())));
@@ -58,8 +58,6 @@ public class AuthenticateOperationProcessor extends BaseOperationProcessor imple
         if (userToken.getRole().toString().equals(UserRole.UNKNOWN.toString())) {
             throw new InvalidTokenException("Invalid user role");
         }
-
-        return user;
     }
 
     @Override
@@ -69,12 +67,9 @@ public class AuthenticateOperationProcessor extends BaseOperationProcessor imple
                     validate(input);
                     String jwtToken = input.getJwtHeader().substring(7);
                     validateToken(jwtToken);
-                    User user = getUserFromToken(jwtToken);
+                    checkTokenMatchesUserEntity(jwtToken);
 
                     AuthenticateOutput output = AuthenticateOutput.builder()
-                            .role(UserRole.getCode(user.getUserRole().toString()))
-                            .username(user.getUsername())
-                            .password(user.getPassword())
                             .build();
 
                     log.info("End process result:{}", output);

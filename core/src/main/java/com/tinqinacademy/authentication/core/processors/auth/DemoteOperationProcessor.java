@@ -12,6 +12,7 @@ import com.tinqinacademy.authentication.api.operations.demote.DemoteOutput;
 import com.tinqinacademy.authentication.core.errors.ErrorMapper;
 import com.tinqinacademy.authentication.core.processors.BaseOperationProcessor;
 import com.tinqinacademy.authentication.core.security.JwtUtil;
+import com.tinqinacademy.authentication.core.security.UserToken;
 import com.tinqinacademy.authentication.persistence.model.User;
 import com.tinqinacademy.authentication.persistence.repository.UserRepository;
 import io.vavr.control.Either;
@@ -40,7 +41,7 @@ public class DemoteOperationProcessor extends BaseOperationProcessor implements 
         this.authenticateOperation = authenticateOperation;
     }
 
-    private AuthenticateOutput getAuthentication(String header) {
+    private UserToken getAuthentication(String header) {
         AuthenticateInput authenticateInput = AuthenticateInput.builder()
                 .jwtHeader(header)
                 .build();
@@ -50,7 +51,7 @@ public class DemoteOperationProcessor extends BaseOperationProcessor implements 
             throw new InvalidTokenException("Invalid token");
         }
 
-        return output.get();
+        return jwtUtil.extractFromHeader(header);
     }
 
     private User getUserToDemote(String userId) {
@@ -69,13 +70,13 @@ public class DemoteOperationProcessor extends BaseOperationProcessor implements 
         return Try.of(() -> {
                     log.info("Start process input:{}", input);
                     validate(input);
-                    AuthenticateOutput authenticateOutput = getAuthentication(input.getJwtHeader());
-                    if(!authenticateOutput.getRole().equals(UserRole.ADMIN)) {
+                    UserToken userToken = getAuthentication(input.getJwtHeader());
+                    if(!userToken.getRole().equals(UserRole.ADMIN.toString())) {
                         throw new InvalidAccessException(UserRole.ADMIN);
                     }
 
                     User user = getUserToDemote(input.getUserId());
-                    if(Objects.equals(user.getUsername(), authenticateOutput.getUsername())){
+                    if(Objects.equals(user.getId().toString(), userToken.getId())){
                         throw new DemoteException("Admin cannot demote self");
                     }
 
