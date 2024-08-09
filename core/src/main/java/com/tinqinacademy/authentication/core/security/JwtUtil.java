@@ -57,4 +57,5 @@ public class JwtUtil {
 
         return new UserToken(userId, role);
     }
+
 }

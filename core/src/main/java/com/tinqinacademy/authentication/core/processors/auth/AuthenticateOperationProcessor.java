@@ -67,8 +67,9 @@ public class AuthenticateOperationProcessor extends BaseOperationProcessor imple
         return Try.of(() -> {
                     log.info("Start process input:{}", input);
                     validate(input);
-                    validateToken(input.getJwtToken());
-                    User user = getUserFromToken(input.getJwtToken());
+                    String jwtToken = input.getJwtHeader().substring(7);
+                    validateToken(jwtToken);
+                    User user = getUserFromToken(jwtToken);
 
                     AuthenticateOutput output = AuthenticateOutput.builder()
                             .role(UserRole.getCode(user.getUserRole().toString()))
