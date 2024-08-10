@@ -11,6 +11,7 @@ import com.tinqinacademy.authentication.api.operations.changepassword.ChangePass
 import com.tinqinacademy.authentication.core.errors.ErrorMapper;
 import com.tinqinacademy.authentication.core.processors.BaseOperationProcessor;
 import com.tinqinacademy.authentication.core.security.HashingUtil;
+import com.tinqinacademy.authentication.core.security.JwtUtil;
 import com.tinqinacademy.authentication.persistence.model.User;
 import com.tinqinacademy.authentication.persistence.repository.UserRepository;
 import io.vavr.control.Either;
@@ -26,14 +27,17 @@ public class ChangePasswordOperationProcessor extends BaseOperationProcessor imp
     private final UserRepository userRepository;
     private final AuthenticateOperation authenticateOperation;
     private final HashingUtil hashingUtil;
+    private final JwtUtil jwtUtil;
 
     public ChangePasswordOperationProcessor(ConversionService conversionService, ErrorMapper errorMapper,
                                             Validator validator, UserRepository userRepository,
-                                            AuthenticateOperation authenticateOperation, HashingUtil hashingUtil) {
+                                            AuthenticateOperation authenticateOperation, HashingUtil hashingUtil,
+                                            JwtUtil jwtUtil) {
         super(conversionService, errorMapper, validator);
         this.userRepository = userRepository;
         this.authenticateOperation = authenticateOperation;
         this.hashingUtil = hashingUtil;
+        this.jwtUtil = jwtUtil;
     }
 
     private void checkAuthentication(String header) {
@@ -48,8 +52,7 @@ public class ChangePasswordOperationProcessor extends BaseOperationProcessor imp
     }
 
     private User getUser(ChangePasswordInput input){
-        return userRepository.findByEmail(input.getEmail()).orElseThrow(
-                () -> new NotFoundException(String.format("User with email %s", input.getEmail())));
+        return userRepository.findByEmail(input.getEmail()).orElseThrow(InvalidCredentialsException::new);
     }
 
     private void checkPasswordsMatch(String password, String hashedPassword) {
@@ -57,10 +60,17 @@ public class ChangePasswordOperationProcessor extends BaseOperationProcessor imp
             throw new InvalidCredentialsException();
         }
     }
-    
+
     private void changePassword(User user, String newPassword) {
         user.setPassword(hashingUtil.hashPassword(newPassword));
         userRepository.save(user);
+    }
+
+    private void validateUserId(User user, String jwtHeader){
+        String userId = jwtUtil.extractFromHeader(jwtHeader).getId();
+        if(!userId.equals(user.getId().toString())){
+            throw new InvalidCredentialsException();
+        }
     }
 
     @Override
@@ -70,6 +80,8 @@ public class ChangePasswordOperationProcessor extends BaseOperationProcessor imp
                     validate(input);
                     checkAuthentication(input.getJwtHeader());
                     User user = getUser(input);
+                    validateUserId(user, input.getJwtHeader());
+
                     checkPasswordsMatch(input.getOldPassword(), user.getPassword());
                     changePassword(user, input.getNewPassword());
 
