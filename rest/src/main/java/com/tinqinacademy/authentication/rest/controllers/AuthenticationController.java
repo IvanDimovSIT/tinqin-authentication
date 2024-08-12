@@ -14,6 +14,9 @@ import com.tinqinacademy.authentication.api.operations.demote.DemoteOutput;
 import com.tinqinacademy.authentication.api.operations.login.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.LoginOutput;
+import com.tinqinacademy.authentication.api.operations.logout.LogoutInput;
+import com.tinqinacademy.authentication.api.operations.logout.LogoutOperation;
+import com.tinqinacademy.authentication.api.operations.logout.LogoutOutput;
 import com.tinqinacademy.authentication.api.operations.promote.PromoteInput;
 import com.tinqinacademy.authentication.api.operations.promote.PromoteOperation;
 import com.tinqinacademy.authentication.api.operations.promote.PromoteOutput;
@@ -39,6 +42,7 @@ public class AuthenticationController extends BaseController {
     private final PromoteOperation promoteOperation;
     private final DemoteOperation demoteOperation;
     private final ChangePasswordOperation changePasswordOperation;
+    private final LogoutOperation logoutOperation;
 
     @Operation(summary = "Authenticates JWT", description = "Returns user details for JWT token")
     @ApiResponses(value = {
@@ -132,6 +136,22 @@ public class AuthenticationController extends BaseController {
         input.setJwtHeader(jwtHeader);
 
         Either<Errors, ChangePasswordOutput> output = changePasswordOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Logout user", description = "Logs out the registered user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    @PostMapping(RestApiRoutes.AUTH_LOGOUT)
+    public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtHeader) {
+        LogoutInput input = LogoutInput.builder()
+                .jwtHeader(jwtHeader)
+                .build();
+        Either<Errors, LogoutOutput> output = logoutOperation.process(input);
 
         return mapToResponseEntity(output, HttpStatus.OK);
     }

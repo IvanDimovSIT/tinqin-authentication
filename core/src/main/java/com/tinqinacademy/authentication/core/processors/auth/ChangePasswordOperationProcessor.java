@@ -62,6 +62,10 @@ public class ChangePasswordOperationProcessor extends BaseOperationProcessor imp
     }
 
     private void changePassword(User user, String newPassword) {
+        if(hashingUtil.verifyPassword(newPassword, user.getPassword())) {
+            throw new ChangePasswordException("New password cannot be the same as the old password");
+        }
+
         user.setPassword(hashingUtil.hashPassword(newPassword));
         userRepository.save(user);
     }
