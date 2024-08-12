@@ -11,8 +11,6 @@ public class RegistrationDateOfBirthValidator implements ConstraintValidator<Reg
 
     @Override
     public boolean isValid(LocalDate date, ConstraintValidatorContext constraintValidatorContext) {
-        LocalDate now = LocalDate.now();
-
-        return ChronoUnit.YEARS.between(date, now) >= MIN_REGISTRATION_AGE;
+        return date == null || ChronoUnit.YEARS.between(date, LocalDate.now()) >= MIN_REGISTRATION_AGE;
     }
 }
