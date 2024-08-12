@@ -1,6 +1,7 @@
 package com.tinqinacademy.authentication.api.operations.register;
 
 import com.tinqinacademy.authentication.api.base.OperationInput;
+import com.tinqinacademy.authentication.api.validation.age.RegistrationDateOfBirth;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -31,5 +32,6 @@ public class RegisterInput implements OperationInput {
     @Pattern(regexp = "[0-9]{10}")
     private String phoneNumber;
     @NotNull
+    @RegistrationDateOfBirth
     private LocalDate dateOfBirth;
 }
