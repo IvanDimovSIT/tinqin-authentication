@@ -13,6 +13,7 @@ import lombok.*;
 @Setter
 public class PromoteInput implements OperationInput {
     @JsonIgnore
+    @NotEmpty
     private String jwtHeader;
     @NotEmpty
     private String userId;
