@@ -15,7 +15,7 @@ import java.util.UUID;
 public class JwtUtil {
     @Value("${jwt.secret}")
     private String SECRET;
-    private static final long EXPIRATION_TIME = 5 * 60_000;
+    private static final long EXPIRATION_TIME_MS = 5 * 60 * 1000;
     private static final String ROLE_KEY = "role";
 
     private Key key() {
@@ -26,7 +26,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(id.toString())
                 .claim(ROLE_KEY, role.toString())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_MS))
                 .signWith(key())
                 .compact();
     }
