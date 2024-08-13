@@ -8,6 +8,9 @@ import com.tinqinacademy.authentication.api.operations.authenticate.Authenticate
 import com.tinqinacademy.authentication.api.operations.changepassword.ChangePasswordInput;
 import com.tinqinacademy.authentication.api.operations.changepassword.ChangePasswordOperation;
 import com.tinqinacademy.authentication.api.operations.changepassword.ChangePasswordOutput;
+import com.tinqinacademy.authentication.api.operations.confirmregistration.ConfirmRegistrationInput;
+import com.tinqinacademy.authentication.api.operations.confirmregistration.ConfirmRegistrationOperation;
+import com.tinqinacademy.authentication.api.operations.confirmregistration.ConfirmRegistrationOutput;
 import com.tinqinacademy.authentication.api.operations.demote.DemoteInput;
 import com.tinqinacademy.authentication.api.operations.demote.DemoteOperation;
 import com.tinqinacademy.authentication.api.operations.demote.DemoteOutput;
@@ -20,9 +23,15 @@ import com.tinqinacademy.authentication.api.operations.logout.LogoutOutput;
 import com.tinqinacademy.authentication.api.operations.promote.PromoteInput;
 import com.tinqinacademy.authentication.api.operations.promote.PromoteOperation;
 import com.tinqinacademy.authentication.api.operations.promote.PromoteOutput;
+import com.tinqinacademy.authentication.api.operations.recoverpassword.RecoverPasswordInput;
+import com.tinqinacademy.authentication.api.operations.recoverpassword.RecoverPasswordOperation;
+import com.tinqinacademy.authentication.api.operations.recoverpassword.RecoverPasswordOutput;
 import com.tinqinacademy.authentication.api.operations.register.RegisterInput;
 import com.tinqinacademy.authentication.api.operations.register.RegisterOperation;
 import com.tinqinacademy.authentication.api.operations.register.RegisterOutput;
+import com.tinqinacademy.authentication.api.operations.resetpassword.ResetPasswordInput;
+import com.tinqinacademy.authentication.api.operations.resetpassword.ResetPasswordOperation;
+import com.tinqinacademy.authentication.api.operations.resetpassword.ResetPasswordOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,6 +52,9 @@ public class AuthenticationController extends BaseController {
     private final DemoteOperation demoteOperation;
     private final ChangePasswordOperation changePasswordOperation;
     private final LogoutOperation logoutOperation;
+    private final ConfirmRegistrationOperation confirmRegistrationOperation;
+    private final RecoverPasswordOperation recoverPasswordOperation;
+    private final ResetPasswordOperation resetPasswordOperation;
 
     @Operation(summary = "Authenticates JWT", description = "Returns user details for JWT token")
     @ApiResponses(value = {
@@ -152,6 +164,44 @@ public class AuthenticationController extends BaseController {
                 .jwtHeader(jwtHeader)
                 .build();
         Either<Errors, LogoutOutput> output = logoutOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Activate user", description = "Activates user account and allows for login")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "404", description = "NotFound"),
+    })
+    @PostMapping(RestApiRoutes.AUTH_CONFIRM_REGISTRATION)
+    public ResponseEntity<?> confirmRegistration(@RequestBody ConfirmRegistrationInput input) {
+        Either<Errors, ConfirmRegistrationOutput> output = confirmRegistrationOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Recover password", description = "Sends password recovery code to email")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success")
+    })
+    @PostMapping(RestApiRoutes.AUTH_RECOVER_PASSWORD)
+    public ResponseEntity<?> recoverPassword(@RequestBody RecoverPasswordInput input) {
+        Either<Errors, RecoverPasswordOutput> output = recoverPasswordOperation.process(input);
+
+        return mapToResponseEntity(output, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Reset password with code", description = "Resets the user password with the password" +
+            " recovery code")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "404", description = "NotFound"),
+    })
+    @PostMapping(RestApiRoutes.AUTH_RESET_PASSWORD)
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordInput input) {
+        Either<Errors, ResetPasswordOutput> output = resetPasswordOperation.process(input);
 
         return mapToResponseEntity(output, HttpStatus.OK);
     }

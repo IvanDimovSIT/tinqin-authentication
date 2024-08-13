@@ -49,6 +49,9 @@ public class User {
     @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 
+    @Column(name = "is_activated", nullable = false)
+    private Boolean isActivated;
+
     @CreationTimestamp
     @Column(name = "created")
     private LocalDateTime created;

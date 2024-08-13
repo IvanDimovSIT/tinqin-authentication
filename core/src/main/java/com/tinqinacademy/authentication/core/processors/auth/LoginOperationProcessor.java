@@ -2,6 +2,7 @@ package com.tinqinacademy.authentication.core.processors.auth;
 
 import com.tinqinacademy.authentication.api.errors.Errors;
 import com.tinqinacademy.authentication.api.exception.exceptions.InvalidCredentialsException;
+import com.tinqinacademy.authentication.api.exception.exceptions.InvalidTokenException;
 import com.tinqinacademy.authentication.api.operations.login.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.LoginOutput;
@@ -40,6 +41,9 @@ public class LoginOperationProcessor extends BaseOperationProcessor implements L
 
         if(!hashingUtil.verifyPassword(input.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException();
+        }
+        if(!user.getIsActivated()){
+            throw new InvalidTokenException("User not activated");
         }
 
         return user;

@@ -52,6 +52,9 @@ public class AuthenticateOperationProcessor extends BaseOperationProcessor imple
         User user = userRepository.findById(UUID.fromString(userToken.getId()))
                 .orElseThrow(() -> new NotFoundException(String.format("User not found: %s", userToken.getId())));
 
+        if(!user.getIsActivated()){
+            throw new InvalidTokenException("User not activated");
+        }
         if(!user.getUserRole().toString().equals(userToken.getRole().toString())) {
             throw new InvalidTokenException("Roles do not match");
         }

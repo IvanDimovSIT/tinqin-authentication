@@ -12,4 +12,7 @@ public class RestApiRoutes {
     public static final String AUTH_PROMOTE = AUTH_BASE+"/promote";
     public static final String AUTH_DEMOTE = AUTH_BASE+"/demote";
     public static final String AUTH_CHANGE_PASSWORD = AUTH_BASE+"/change-password";
+    public static final String AUTH_CONFIRM_REGISTRATION = AUTH_BASE+"/confirm-registration";
+    public static final String AUTH_RECOVER_PASSWORD = AUTH_BASE+"/recover-password";
+    public static final String AUTH_RESET_PASSWORD = AUTH_BASE+"/reset-password";
 }
