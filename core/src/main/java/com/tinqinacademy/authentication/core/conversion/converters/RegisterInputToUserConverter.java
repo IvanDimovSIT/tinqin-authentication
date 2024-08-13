@@ -18,6 +18,7 @@ public class RegisterInputToUserConverter extends BaseConverter<RegisterInput, U
                 .firstName(source.getFirstName())
                 .lastName(source.getLastName())
                 .phoneNumber(source.getPhoneNumber())
+                .isActivated(false)
                 .userRole(UserRole.USER)
                 .build();
 

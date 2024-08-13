@@ -2,10 +2,7 @@ package com.tinqinacademy.authentication.api.operations.register;
 
 import com.tinqinacademy.authentication.api.base.OperationInput;
 import com.tinqinacademy.authentication.api.validation.age.RegistrationDateOfBirth;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -27,6 +24,7 @@ public class RegisterInput implements OperationInput {
     @Email
     private String email;
     @NotEmpty
+    @Size(min = 4, max = 32)
     private String password;
     @NotEmpty
     @Pattern(regexp = "[0-9]{10}")
