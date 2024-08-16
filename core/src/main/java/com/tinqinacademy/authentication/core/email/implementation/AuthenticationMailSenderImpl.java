@@ -25,6 +25,6 @@ public class AuthenticationMailSenderImpl implements AuthenticationMailSender {
         message.setText(contents);
         emailSender.send(message);
 
-        log.info("Email sent to {}", to);
+        log.info("Email sent to {} from {}", to, from);
     }
 }
