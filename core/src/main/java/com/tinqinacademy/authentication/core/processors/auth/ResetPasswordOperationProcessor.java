@@ -2,6 +2,7 @@ package com.tinqinacademy.authentication.core.processors.auth;
 
 import com.tinqinacademy.authentication.api.errors.Errors;
 import com.tinqinacademy.authentication.api.exception.exceptions.NotFoundException;
+import com.tinqinacademy.authentication.api.exception.exceptions.RestPasswordException;
 import com.tinqinacademy.authentication.api.operations.resetpassword.ResetPasswordInput;
 import com.tinqinacademy.authentication.api.operations.resetpassword.ResetPasswordOperation;
 import com.tinqinacademy.authentication.api.operations.resetpassword.ResetPasswordOutput;
@@ -15,9 +16,12 @@ import com.tinqinacademy.authentication.persistence.repository.UserRepository;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -25,6 +29,9 @@ public class ResetPasswordOperationProcessor extends BaseOperationProcessor impl
     private final RecoverPasswordCodeRepository recoverPasswordCodeRepository;
     private final UserRepository userRepository;
     private final HashingUtil hashingUtil;
+
+    @Value("${password-recovery-code.validity-minutes}")
+    private int codeValidityMinutes;
 
     public ResetPasswordOperationProcessor(ConversionService conversionService, ErrorMapper errorMapper,
                                            Validator validator,
@@ -37,8 +44,16 @@ public class ResetPasswordOperationProcessor extends BaseOperationProcessor impl
     }
 
     private RecoverPasswordCode getRecoverPasswordCode(String code) {
-        return recoverPasswordCodeRepository.findByRecoveryCode(code).orElseThrow(
+        RecoverPasswordCode recoverPasswordCode = recoverPasswordCodeRepository.findByRecoveryCode(code).orElseThrow(
                 () -> new NotFoundException(String.format("Password recover code:%s", code)));
+
+        LocalDateTime validity = recoverPasswordCode.getCreated().plusMinutes(codeValidityMinutes);
+        if(validity.isBefore(LocalDateTime.now())) {
+            throw new RestPasswordException(String.format("Password recovery code is expired, expires at:%s",
+                    validity.toString()));
+        }
+
+        return recoverPasswordCode;
     }
 
     private User getUser(String email){

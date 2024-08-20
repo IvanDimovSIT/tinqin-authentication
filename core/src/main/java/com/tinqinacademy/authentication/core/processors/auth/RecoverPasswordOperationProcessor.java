@@ -46,9 +46,7 @@ public class RecoverPasswordOperationProcessor extends BaseOperationProcessor im
 
     private RecoverPasswordCode createCode(String email) {
         Optional<RecoverPasswordCode> existingCode = recoverPasswordCodeRepository.findByEmail(email);
-        if (existingCode.isPresent()) {
-            return existingCode.get();
-        }
+        existingCode.ifPresent(recoverPasswordCodeRepository::delete);
 
         String randomCode = randomCodeGenerator.generate(10);
         RecoverPasswordCode recoverPasswordCode = RecoverPasswordCode.builder()
