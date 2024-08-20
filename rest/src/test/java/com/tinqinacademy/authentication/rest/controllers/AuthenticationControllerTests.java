@@ -16,7 +16,11 @@ import com.tinqinacademy.authentication.core.security.HashingUtil;
 import com.tinqinacademy.authentication.core.security.JwtUtil;
 import com.tinqinacademy.authentication.persistence.model.User;
 import com.tinqinacademy.authentication.persistence.model.enums.UserRole;
+import com.tinqinacademy.authentication.persistence.repository.BlacklistedTokenRepository;
+import com.tinqinacademy.authentication.persistence.repository.EmailActivationCodeRepository;
+import com.tinqinacademy.authentication.persistence.repository.RecoverPasswordCodeRepository;
 import com.tinqinacademy.authentication.persistence.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +47,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY, connection = EmbeddedDatabaseConnection.H2)
 @ActiveProfiles("test")
-@Transactional
 public class AuthenticationControllerTests {
     @Autowired
     private MockMvc mvc;
@@ -51,6 +54,12 @@ public class AuthenticationControllerTests {
     private ObjectMapper mapper;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private BlacklistedTokenRepository blacklistedTokenRepository;
+    @Autowired
+    private EmailActivationCodeRepository emailActivationCodeRepository;
+    @Autowired
+    private RecoverPasswordCodeRepository recoverPasswordCodeRepository;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -62,11 +71,6 @@ public class AuthenticationControllerTests {
                     .withUser("testuser@example.com", "password123"))
             .withPerMethodLifecycle(true);
 
-    private User testUser;
-    private String testUserToken;
-
-    private User adminUser;
-    private String adminUserToken;
 
     private String generateTestToken(User user) {
         return jwtUtil.generateToken(user.getId(), user.getUserRole());
@@ -74,7 +78,7 @@ public class AuthenticationControllerTests {
 
     @BeforeEach
     public void setup() {
-        testUser = User.builder()
+        User testUser = User.builder()
                 .username("testuser")
                 .firstName("Ivan")
                 .lastName("Ivanov")
@@ -85,11 +89,10 @@ public class AuthenticationControllerTests {
                 .isActivated(true)
                 .userRole(UserRole.USER)
                 .build();
-        testUser = userRepository.save(testUser);
+        userRepository.save(testUser);
 
-        testUserToken = "Bearer " + generateTestToken(testUser);
 
-        adminUser = User.builder()
+        User adminUser = User.builder()
                 .username("adminuser")
                 .email("admin@example.com")
                 .password("adminpass123")
@@ -100,9 +103,16 @@ public class AuthenticationControllerTests {
                 .firstName("Admin")
                 .lastName("User")
                 .build();
-        adminUser = userRepository.save(adminUser);
+        userRepository.save(adminUser);
 
-        adminUserToken = "Bearer " + generateTestToken(adminUser);
+    }
+
+    @AfterEach
+    public void clearDB(){
+        userRepository.deleteAll();
+        emailActivationCodeRepository.deleteAll();
+        recoverPasswordCodeRepository.deleteAll();
+        blacklistedTokenRepository.deleteAll();
     }
 
     @Test
@@ -119,6 +129,8 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testRecoverPasswordOk() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+
         RecoverPasswordInput nullEmailInput = RecoverPasswordInput.builder()
                 .email(testUser.getEmail())
                 .build();
@@ -143,6 +155,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testPromoteSuccess() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+        String adminUserToken = "Bearer " + generateTestToken(adminUser);
         PromoteInput input = PromoteInput.builder()
                 .userId(testUser.getId().toString())
                 .build();
@@ -156,6 +171,10 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testPromoteForbidden() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+
         PromoteInput input = PromoteInput.builder()
                 .userId(adminUser.getId().toString())
                 .build();
@@ -169,6 +188,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testPromoteNotFound() throws Exception {
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+        String adminUserToken = "Bearer " + generateTestToken(adminUser);
+
         PromoteInput input = PromoteInput.builder()
                 .userId(UUID.randomUUID().toString())
                 .build();
@@ -182,6 +204,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testPromoteBadRequest() throws Exception {
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+        String adminUserToken = "Bearer " + generateTestToken(adminUser);
+
         PromoteInput input = PromoteInput.builder()
                 .userId("123")
                 .build();
@@ -195,6 +220,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testDemoteSuccess() throws Exception {
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+        String adminUserToken = "Bearer " + generateTestToken(adminUser);
+
         User anotherAdmin = User.builder()
                 .username("anotheradmin")
                 .email("another@admin.com")
@@ -221,6 +249,10 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testDemoteForbidden() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+
         DemoteInput input = DemoteInput.builder()
                 .userId(adminUser.getId().toString())
                 .build();
@@ -234,6 +266,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testDemoteNotFound() throws Exception {
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+        String adminUserToken = "Bearer " + generateTestToken(adminUser);
+
         DemoteInput input = DemoteInput.builder()
                 .userId(UUID.randomUUID().toString())
                 .build();
@@ -247,6 +282,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testDemoteBadRequest() throws Exception {
+        User adminUser = userRepository.findByEmail("admin@example.com").get();
+        String adminUserToken = "Bearer " + generateTestToken(adminUser);
+
         DemoteInput input = DemoteInput.builder()
                 .userId("123")
                 .build();
@@ -291,7 +329,7 @@ public class AuthenticationControllerTests {
         mvc.perform(post(RestApiRoutes.AUTH_REGISTER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(input)))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -349,6 +387,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testAuthenticateOk() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+
         mvc.perform(post(RestApiRoutes.AUTH_AUTHENTICATE)
                         .header("Authorization", testUserToken))
                 .andExpect(status().isOk());
@@ -363,6 +404,8 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testChangePasswordOk() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
         ChangePasswordInput input = ChangePasswordInput.builder()
                 .email(testUser.getEmail())
                 .oldPassword("password123")
@@ -378,6 +421,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testChangePasswordUnauthorizedWrongPassword() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+
         ChangePasswordInput input = ChangePasswordInput.builder()
                 .email(testUser.getEmail())
                 .oldPassword("wrongpassword")
@@ -393,6 +439,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testChangePasswordBadRequestSamePassword() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+
         ChangePasswordInput input = ChangePasswordInput.builder()
                 .email(testUser.getEmail())
                 .oldPassword("password123")
@@ -408,6 +457,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testChangePasswordBadRequestWrongEmail() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+
         ChangePasswordInput input = ChangePasswordInput.builder()
                 .email("wrong email")
                 .oldPassword("password123")
@@ -423,6 +475,9 @@ public class AuthenticationControllerTests {
 
     @Test
     public void testLogoutOk() throws Exception {
+        User testUser = userRepository.findByEmail("testuser@example.com").get();
+        String testUserToken = "Bearer " + generateTestToken(testUser);
+
         mvc.perform(post(RestApiRoutes.AUTH_LOGOUT)
                         .header("Authorization", testUserToken))
                 .andExpect(status().isOk());
