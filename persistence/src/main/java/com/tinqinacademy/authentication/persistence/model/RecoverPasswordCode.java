@@ -25,7 +25,7 @@ public class RecoverPasswordCode {
     @Column(name = "email", nullable = false, length = 64, unique = true)
     private String email;
 
-    @Column(name = "recovery_code", nullable = false, length = 32)
+    @Column(name = "recovery_code", nullable = false, length = 32, unique = true)
     private String recoveryCode;
 
     @CreationTimestamp
