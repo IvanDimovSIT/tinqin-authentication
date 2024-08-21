@@ -23,10 +23,14 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class RecoverPasswordOperationProcessor extends BaseOperationProcessor implements RecoverPasswordOperation {
+    private static final int NUMBER_OF_TRIES_FOR_GENERATED_CODE = 3;
+    private static final int CODE_LENGTH = 10;
+
     private final UserRepository userRepository;
     private final RecoverPasswordCodeRepository recoverPasswordCodeRepository;
     private final AuthenticationMailSender authenticationMailSender;
     private final RandomCodeGenerator randomCodeGenerator;
+
 
     public RecoverPasswordOperationProcessor(ConversionService conversionService, ErrorMapper errorMapper,
                                              Validator validator, UserRepository userRepository,
@@ -44,11 +48,23 @@ public class RecoverPasswordOperationProcessor extends BaseOperationProcessor im
         return userRepository.findByEmail(email).isPresent();
     }
 
-    private RecoverPasswordCode createCode(String email) {
+    private String generateRandomCode() {
+        String randomCode;
+        for(int i=0; i<NUMBER_OF_TRIES_FOR_GENERATED_CODE; i++){
+            randomCode = randomCodeGenerator.generate(CODE_LENGTH);
+            if(recoverPasswordCodeRepository.findByRecoveryCode(randomCode).isEmpty()){
+                return randomCode;
+            }
+        }
+        throw new RuntimeException("Could not generate random code");
+    }
+
+    private RecoverPasswordCode createCodeForEmail(String email) {
         Optional<RecoverPasswordCode> existingCode = recoverPasswordCodeRepository.findByEmail(email);
         existingCode.ifPresent(recoverPasswordCodeRepository::delete);
 
-        String randomCode = randomCodeGenerator.generate(10);
+        String randomCode = generateRandomCode();
+
         RecoverPasswordCode recoverPasswordCode = RecoverPasswordCode.builder()
                 .email(email)
                 .recoveryCode(randomCode)
@@ -76,7 +92,7 @@ public class RecoverPasswordOperationProcessor extends BaseOperationProcessor im
                         log.info("End process result:{}", output);
                         return output;
                     }
-                    RecoverPasswordCode code = createCode(input.getEmail());
+                    RecoverPasswordCode code = createCodeForEmail(input.getEmail());
                     sendEmail(code);
 
                     log.info("End process result:{}", output);
